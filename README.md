@@ -1,36 +1,53 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# BekalKarir 🚀
 
-## Getting Started
+> **Pekerjaan sesuai kemampuan nyata.**
 
-First, run the development server:
+BekalKarir adalah functional prototype platform karier berbasis AI yang membantu mahasiswa, fresh graduate, dan early-career job seekers menemukan peluang kerja berdasarkan **skill, pengalaman, lokasi, ekspektasi gaji, dan preferensi kerja**.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+Dibangun untuk kompetisi VibeCode dengan tema:
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+> **Shaping Tomorrow: Digital Innovation, Artificial Intelligence, and Sustainable Communities**
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## ✨ Tentang BekalKarir
 
-## Learn More
+Banyak mahasiswa dan fresh graduate tidak hanya kesulitan menemukan lowongan, tetapi juga menemukan **lowongan yang benar-benar sesuai dengan kemampuan mereka**.
 
-To learn more about Next.js, take a look at the following resources:
+BekalKarir mencoba menyelesaikan masalah tersebut dengan menggabungkan:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- 🧠 **AI Job Matching**
+- 📄 **AI CV Analyzer**
+- 🎤 **AI Interview Simulator**
+- 📊 **Application Tracker**
+- 📍 **Peluang di Sekitarmu**
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Fokus utama BekalKarir adalah **skill integrity**: sistem tidak mendorong pengguna untuk mengarang atau melebih-lebihkan kemampuan mereka.
 
-## Deploy on Vercel
+---
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 🎯 Masalah yang Kami Seleseikan
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Pencari kerja pemula sering menghadapi:
+
+- Lowongan yang tidak sesuai dengan skill.
+- Kesulitan memahami apakah sebuah pekerjaan benar-benar cocok.
+- CV yang kurang terstruktur.
+- Kurangnya pengalaman interview.
+- Sulit mengelola banyak lamaran.
+- Kurangnya informasi mengenai peluang di sekitar komunitas mereka.
+
+BekalKarir mengubah proses tersebut menjadi satu alur:
+
+```text
+Profil Skill
+     ↓
+AI Job Matching
+     ↓
+Analisis CV
+     ↓
+AI Interview
+     ↓
+Application Tracking
+     ↓
+Peluang Lokal
