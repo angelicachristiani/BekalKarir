@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { extractCVFromText, analyzeCVLocally, matchCVToJob } from "@/services/ai-cv";
 import { PDFParse } from "pdf-parse";
+import { CanvasFactory } from "pdf-parse/worker";
 
 export const runtime = "nodejs";
 
@@ -46,7 +47,7 @@ export async function POST(req: Request) {
 
       let parser: PDFParse | null = null;
       try {
-        parser = new PDFParse({ data: uint8Array });
+        parser = new PDFParse({ data: uint8Array, CanvasFactory });
         const textResult = await parser.getText();
         cvText = textResult.text || "";
       } finally {
