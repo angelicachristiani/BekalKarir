@@ -5,7 +5,7 @@ import { Upload, FileText, X, AlertTriangle, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface CVUploaderProps {
-  onFileSelected: (file: File, text: string) => void;
+  onFileSelected: (file: File) => void;
   isAnalyzing: boolean;
 }
 
@@ -15,44 +15,23 @@ export default function CVUploader({ onFileSelected, isAnalyzing }: CVUploaderPr
   const [dragActive, setDragActive] = useState(false);
   const [file, setFile] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [parsing, setParsing] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const handleFile = useCallback(async (f: File) => {
+  const handleFile = useCallback((f: File) => {
     setError(null);
 
     if (f.type !== "application/pdf") {
-      setError("Hanya file PDF yang diterima.");
+      setError("Hanya file PDF yang dapat dianalisis.");
       return;
     }
 
     if (f.size > MAX_SIZE_MB * 1024 * 1024) {
-      setError(`Ukuran file maksimal ${MAX_SIZE_MB}MB.`);
+      setError("Ukuran CV maksimal 5MB.");
       return;
     }
 
     setFile(f);
-    setParsing(true);
-
-    try {
-      const arrayBuffer = await f.arrayBuffer();
-      const { PDFParse } = await import("pdf-parse");
-      const parser = new PDFParse({ data: new Uint8Array(arrayBuffer) });
-      const textResult = await parser.getText();
-      const text = textResult.text || "";
-
-      if (!text || text.trim().length < 10) {
-        setError("CV ini tidak dapat dibaca secara otomatis. Coba gunakan PDF dengan teks yang dapat diseleksi.");
-        setParsing(false);
-        return;
-      }
-
-      onFileSelected(f, text);
-    } catch {
-      setError("Gagal membaca file PDF. Pastikan file tidak rusak.");
-    } finally {
-      setParsing(false);
-    }
+    onFileSelected(f);
   }, [onFileSelected]);
 
   const handleDrop = useCallback((e: React.DragEvent) => {
@@ -116,10 +95,10 @@ export default function CVUploader({ onFileSelected, isAnalyzing }: CVUploaderPr
             <p className="font-semibold text-slate-900 truncate">{file.name}</p>
             <p className="text-sm text-slate-500">{formatSize(file.size)}</p>
           </div>
-          {(parsing || isAnalyzing) && (
+          {isAnalyzing && (
             <Loader2 className="w-5 h-5 text-primary animate-spin shrink-0" />
           )}
-          {!parsing && !isAnalyzing && (
+          {!isAnalyzing && (
             <button onClick={removeFile} className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 hover:bg-slate-200 transition-colors">
               <X className="w-4 h-4" />
             </button>

@@ -17,7 +17,7 @@ import AppNav from "@/components/layout/AppNav";
 
 export default function CVAnalyzerPage() {
   const [profile, setProfile] = useState<any>(null);
-  const [cvText, setCvText] = useState<string | null>(null);
+  const [cvFile, setCvFile] = useState<File | null>(null);
   const [fileName, setFileName] = useState<string>("");
   const [extracted, setExtracted] = useState<ExtractedCV | null>(null);
   const [analysis, setAnalysis] = useState<CVAnalysisResult | null>(null);
@@ -25,26 +25,38 @@ export default function CVAnalyzerPage() {
   const [selectedJobId, setSelectedJobId] = useState<string>("");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [step, setStep] = useState<"upload" | "result">("upload");
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   useEffect(() => {
     const saved = localStorage.getItem("bekalkarir_profile");
     if (saved) setProfile(JSON.parse(saved));
   }, []);
 
-  const handleFileSelected = async (file: File, text: string) => {
-    setCvText(text);
+  const handleFileSelected = async (file: File) => {
+    setCvFile(file);
     setFileName(file.name);
     setIsAnalyzing(true);
+    setErrorMsg(null);
 
     try {
+      const formData = new FormData();
+      formData.append("file", file);
+      if (profile) {
+        formData.append("userProfile", JSON.stringify(profile));
+      }
+
       const res = await fetch("/api/cv/analyze", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ cvText: text, userProfile: profile }),
+        body: formData,
       });
 
-      if (!res.ok) throw new Error("Analysis failed");
       const data = await res.json();
+
+      if (!res.ok) {
+        setErrorMsg(data.error || "Gagal memproses CV. Silakan coba lagi.");
+        setIsAnalyzing(false);
+        return;
+      }
 
       setExtracted(data.extracted);
       setAnalysis(data.analysis);
@@ -53,14 +65,14 @@ export default function CVAnalyzerPage() {
       }
       setStep("result");
     } catch {
-      setStep("result");
+      setErrorMsg("Gagal memproses CV. Silakan coba lagi.");
     } finally {
       setIsAnalyzing(false);
     }
   };
 
   const handleJobMatch = async () => {
-    if (!selectedJobId || !cvText || !extracted) return;
+    if (!selectedJobId || !cvFile || !extracted) return;
 
     const job = MOCK_JOBS.find((j) => j.id === selectedJobId);
     if (!job) return;
@@ -68,14 +80,16 @@ export default function CVAnalyzerPage() {
     setIsAnalyzing(true);
 
     try {
+      const formData = new FormData();
+      formData.append("file", cvFile);
+      if (profile) {
+        formData.append("userProfile", JSON.stringify(profile));
+      }
+      formData.append("targetJob", JSON.stringify({ title: job.title, skills: job.skills }));
+
       const res = await fetch("/api/cv/analyze", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          cvText,
-          userProfile: profile,
-          targetJob: { title: job.title, skills: job.skills },
-        }),
+        body: formData,
       });
 
       if (!res.ok) throw new Error("Match failed");
@@ -116,12 +130,13 @@ export default function CVAnalyzerPage() {
   };
 
   const resetAnalyzer = () => {
-    setCvText(null);
+    setCvFile(null);
     setFileName("");
     setExtracted(null);
     setAnalysis(null);
     setJobMatch(null);
     setSelectedJobId("");
+    setErrorMsg(null);
     setStep("upload");
   };
 
@@ -149,7 +164,16 @@ export default function CVAnalyzerPage() {
               </div>
             )}
 
-            {!isAnalyzing && extracted && (
+            {!isAnalyzing && errorMsg && (
+              <div className="bg-amber-50 p-6 rounded-3xl border border-amber-200 text-center">
+                <p className="text-amber-800 font-medium">{errorMsg}</p>
+                <Button onClick={resetAnalyzer} variant="outline" className="mt-4 h-12 rounded-2xl font-bold">
+                  Coba Lagi
+                </Button>
+              </div>
+            )}
+
+            {!isAnalyzing && !errorMsg && extracted && (
               <>
                 <CVExtractionPreview extracted={extracted} />
 

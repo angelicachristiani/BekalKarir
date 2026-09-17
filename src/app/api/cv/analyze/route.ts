@@ -1,14 +1,71 @@
 import { NextResponse } from "next/server";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { extractCVFromText, analyzeCVLocally, matchCVToJob } from "@/services/ai-cv";
+import { PDFParse } from "pdf-parse";
+
+export const runtime = "nodejs";
+
+const MAX_FILE_SIZE = 5 * 1024 * 1024;
 
 export async function POST(req: Request) {
   try {
-    const body = await req.json();
-    const { cvText, userProfile, targetJob } = body;
+    const contentType = req.headers.get("content-type") || "";
 
-    if (!cvText || typeof cvText !== "string" || cvText.trim().length < 10) {
-      return NextResponse.json({ error: "CV text tidak valid atau terlalu pendek." }, { status: 400 });
+    let cvText: string | null = null;
+    let userProfile: any = null;
+    let targetJob: { title: string; skills: string[] } | null = null;
+
+    if (contentType.includes("multipart/form-data")) {
+      const formData = await req.formData();
+      const file = formData.get("file");
+
+      if (!file || !(file instanceof File)) {
+        return NextResponse.json({ error: "File CV tidak ditemukan." }, { status: 400 });
+      }
+
+      if (file.type !== "application/pdf") {
+        return NextResponse.json({ error: "Hanya file PDF yang dapat dianalisis." }, { status: 400 });
+      }
+
+      if (file.size > MAX_FILE_SIZE) {
+        return NextResponse.json({ error: "Ukuran CV maksimal 5MB." }, { status: 400 });
+      }
+
+      const profileStr = formData.get("userProfile");
+      if (profileStr && typeof profileStr === "string") {
+        try { userProfile = JSON.parse(profileStr); } catch {}
+      }
+
+      const targetJobStr = formData.get("targetJob");
+      if (targetJobStr && typeof targetJobStr === "string") {
+        try { targetJob = JSON.parse(targetJobStr); } catch {}
+      }
+
+      const arrayBuffer = await file.arrayBuffer();
+      const uint8Array = new Uint8Array(arrayBuffer);
+
+      let parser: PDFParse | null = null;
+      try {
+        parser = new PDFParse({ data: uint8Array });
+        const textResult = await parser.getText();
+        cvText = textResult.text || "";
+      } finally {
+        if (parser) {
+          try { await parser.destroy(); } catch {}
+        }
+      }
+
+      if (!cvText || cvText.trim().length < 10) {
+        return NextResponse.json(
+          { error: "PDF tidak dapat dibaca. Pastikan file memiliki teks yang dapat diseleksi." },
+          { status: 400 }
+        );
+      }
+    } else {
+      return NextResponse.json(
+        { error: "Format request tidak valid." },
+        { status: 400 }
+      );
     }
 
     const extracted = extractCVFromText(cvText);
@@ -78,6 +135,6 @@ Skor harus realistis berdasarkan kualitas CV. Gunakan Bahasa Indonesia.`;
     }
   } catch (error) {
     console.error("CV analysis error:", error);
-    return NextResponse.json({ error: "Gagal menganalisis CV." }, { status: 500 });
+    return NextResponse.json({ error: "Gagal memproses CV. Silakan coba lagi." }, { status: 500 });
   }
 }
